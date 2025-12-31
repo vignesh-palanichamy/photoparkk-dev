@@ -1,0 +1,38 @@
+.mask-hexagon,
+.mask-portrait,
+.mask-landscape,
+.mask-square {
+  width: 500px;         /* Extra large width */
+  height: auto;         /* Height will follow aspect-ratio */
+  max-width: 100%;      /* Responsive fallback */
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+  border: 3px solid #ccc;
+  overflow: hidden;
+}
+
+.mask-hexagon {
+  clip-path: polygon(25% 5%, 75% 5%, 100% 50%, 75% 95%, 25% 95%, 0% 50%);
+  aspect-ratio: 1 / 1;
+}
+
+.mask-portrait {
+  border-radius: 16px;
+  aspect-ratio: 3 / 4;
+}
+
+.mask-landscape {
+  border-radius: 16px;
+  aspect-ratio: 4 / 3;
+}
+
+.mask-square {
+  border-radius: 12px;
+  aspect-ratio: 1 / 1;
+}
+
+.frame-border {
+  border-width: 10px;
+  border-style: solid;
+  border-radius: 16px;
+  padding: 6px;
+}
