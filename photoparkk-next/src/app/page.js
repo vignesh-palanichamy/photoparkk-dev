@@ -1,7 +1,7 @@
 'use client';
 
 import React from "react";
-import LandingPage from "@/Components/HomePageComponents/LandingPage";
+import LandingPage from "@/Components/LandingPage";
 import Customize from "@/Components/HomePageComponents/Customize";
 import OurCollection from "@/Components/HomePageComponents/OurCollection";
 import CategoryShowcase from "@/Components/HomePageComponents/CategoryShowcase";
