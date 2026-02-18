@@ -6,6 +6,7 @@ import axios from "axios";
 import { Upload, X, Image, Eye, Sparkles, CheckCircle2 } from "lucide-react";
 import LoadingBar from "../LoadingBar";
 import { toast } from "react-toastify";
+import axiosInstance from "../../utils/axiosInstance";
 
 const MAX_UPLOAD_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
 const MAX_UPLOAD_SIZE_MB = 10;
@@ -15,6 +16,7 @@ const GenericCustomize = ({ type, shape }) => {
     // shape: "portrait", "landscape", "square", "love", "hexagon", "round"
     const [photoData, setPhotoData] = useState(null);
     const [isDragging, setIsDragging] = useState(false);
+    const [productConfig, setProductConfig] = useState(null);
     const fileInputRef = useRef(null);
     const router = useRouter();
     const [isUploading, setIsUploading] = useState(false);
@@ -22,6 +24,20 @@ const GenericCustomize = ({ type, shape }) => {
 
     const shapeTitle = shape.charAt(0).toUpperCase() + shape.slice(1);
     const typeTitle = type.charAt(0).toUpperCase() + type.slice(1);
+
+    React.useEffect(() => {
+        const fetchConfig = async () => {
+            try {
+                const res = await axiosInstance.get(`frames/${type}?shape=${shape}`);
+                if (res.data && res.data.length > 0) {
+                    setProductConfig(res.data[0]);
+                }
+            } catch (err) {
+                console.error("Failed to fetch config", err);
+            }
+        };
+        fetchConfig();
+    }, [type, shape]);
 
     const handleFileUpload = async (file) => {
         if (!file.type.match("image.*")) {
@@ -187,13 +203,13 @@ const GenericCustomize = ({ type, shape }) => {
                 <div className="text-center mb-8">
                     <div className="inline-flex items-center gap-2 bg-primary text-white px-6 py-2 rounded-full mb-4">
                         <Sparkles className="w-5 h-5" />
-                        <span className="font-semibold">{typeTitle} {shapeTitle} Frame</span>
+                        <span className="font-semibold">{productConfig?.title || `${typeTitle} ${shapeTitle} Frame`}</span>
                     </div>
                     <h1 className="text-4xl md:text-5xl font-bold text-secondary mb-3">
-                        Customize Your {typeTitle} {shapeTitle}
+                        {productConfig ? `Customize ${productConfig.title}` : `Customize Your ${typeTitle} ${shapeTitle}`}
                     </h1>
                     <p className="text-lg text-neutral-600 max-w-2xl mx-auto">
-                        Upload your favorite photo and see it come to life in a beautiful {typeTitle.toLowerCase()} frame
+                        {productConfig?.content || `Upload your favorite photo and see it come to life in a beautiful ${typeTitle.toLowerCase()} frame`}
                     </p>
                 </div>
 
@@ -222,15 +238,15 @@ const GenericCustomize = ({ type, shape }) => {
                                     onDragLeave={handleDragLeave}
                                     onDrop={handleDrop}
                                     className={`border-2 border-dashed rounded-xl p-12 text-center transition-all duration-300 ${isDragging
-                                            ? "border-primary bg-primary-light scale-[1.02]"
-                                            : "border-neutral-300 hover:border-primary hover:bg-neutral-50"
+                                        ? "border-primary bg-primary-light scale-[1.02]"
+                                        : "border-neutral-300 hover:border-primary hover:bg-neutral-50"
                                         }`}
                                 >
                                     <div className="flex flex-col items-center justify-center space-y-6">
                                         <div
                                             className={`p-4 rounded-full transition-all ${isDragging
-                                                    ? "bg-primary-light scale-110"
-                                                    : "bg-neutral-100"
+                                                ? "bg-primary-light scale-110"
+                                                : "bg-neutral-100"
                                                 }`}
                                         >
                                             <Image
@@ -315,8 +331,8 @@ const GenericCustomize = ({ type, shape }) => {
                                     onClick={handlePreviewClick}
                                     disabled={!photoData}
                                     className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 ${photoData
-                                            ? "bg-white text-primary hover:bg-neutral-50 shadow-lg hover:shadow-xl transform hover:scale-105"
-                                            : "bg-white/20 text-white/50 cursor-not-allowed"
+                                        ? "bg-white text-primary hover:bg-neutral-50 shadow-lg hover:shadow-xl transform hover:scale-105"
+                                        : "bg-white/20 text-white/50 cursor-not-allowed"
                                         }`}
                                 >
                                     Proceed to Order

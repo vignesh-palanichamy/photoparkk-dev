@@ -10,18 +10,29 @@ const TABLE_MAP = {
 
 export async function GET(request, { params }) {
     const { type } = await params;
+    const { searchParams } = new URL(request.url);
+    const shape = searchParams.get('shape');
+
     const tableName = TABLE_MAP[type];
 
     if (!tableName) {
         return NextResponse.json({ message: "Invalid product type" }, { status: 400 });
     }
 
-    const { data, error } = await supabase
+    let query = supabase
         .from(tableName)
-        .select('*')
-        .order('created_at', { ascending: false });
+        .select('*');
+
+    if (shape) {
+        // Handle both capitalized and lower case shapes from query param
+        const capitalizedShape = shape.charAt(0).toUpperCase() + shape.slice(1).toLowerCase();
+        query = query.eq('shape', capitalizedShape);
+    }
+
+    const { data, error } = await query.order('created_at', { ascending: false });
 
     if (error) {
+        console.error("Fetch frames error:", error);
         return NextResponse.json({ message: "Failed to fetch frames" }, { status: 500 });
     }
 

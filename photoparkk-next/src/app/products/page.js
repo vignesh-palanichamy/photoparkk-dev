@@ -12,14 +12,17 @@ const Products = () => {
     const [searchQuery, setSearchQuery] = useState("");
 
     useEffect(() => {
-        const fetchProducts = async () => {
+        const fetchAllProducts = async () => {
             try {
-                const response = await axiosInstance.get("newarrivals");
-                if (Array.isArray(response.data)) {
-                    setProducts(response.data);
-                } else {
-                    setProducts([]);
-                }
+                const types = ['acrylic', 'canvas', 'backlight'];
+                const promises = types.map(async (type) => {
+                    const res = await axiosInstance.get(`frames/${type}`);
+                    return res.data.map(item => ({ ...item, type }));
+                });
+
+                const results = await Promise.all(promises);
+                const merged = results.flat();
+                setProducts(merged);
                 setLoading(false);
             } catch (error) {
                 console.error("Failed to fetch products:", error);
@@ -28,74 +31,78 @@ const Products = () => {
             }
         };
 
-        fetchProducts();
+        fetchAllProducts();
     }, []);
 
     const filteredProducts = products.filter((product) =>
-        product.title?.toLowerCase().includes(searchQuery.toLowerCase())
+        product.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.type?.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     return (
-        <div className="bg-neutral-50 pt-[100px] pb-8 px-4 min-h-screen">
+        <div className="bg-neutral-50 pt-[120px] pb-8 px-4 min-h-screen font-[Poppins]">
             <div className="max-w-7xl mx-auto">
                 {/* Header */}
-                <div className="mb-8">
-                    <div className="flex items-center gap-3 mb-4">
-                        <div className="p-3 bg-primary rounded-xl shadow-lg">
-                            <Package className="w-8 h-8 text-white" />
+                <div className="mb-12">
+                    <div className="flex items-center gap-4 mb-4">
+                        <div className="p-4 bg-primary rounded-2xl shadow-lg text-white">
+                            <Package className="w-8 h-8" />
                         </div>
                         <div>
                             <h1 className="text-4xl md:text-5xl font-bold text-secondary">
-                                All Products
+                                Our Collection
                             </h1>
-                            <p className="text-neutral-600 mt-1">
-                                Browse our complete collection of premium photo frames
+                            <p className="text-neutral-600 mt-2 text-lg">
+                                Premium customizable frames for your precious memories
                             </p>
                         </div>
                     </div>
 
                     {/* Search Bar */}
-                    <div className="mt-6 max-w-md">
-                        <div className="relative">
-                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-neutral-400" />
+                    <div className="mt-8 max-w-xl">
+                        <div className="relative group">
+                            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-neutral-400 group-focus-within:text-primary transition-colors" />
                             <input
                                 type="text"
-                                placeholder="Search products..."
+                                placeholder="Search by name or category (e.g. Acrylic)..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-10 pr-4 py-3 border-2 border-neutral-300 rounded-xl focus:outline-primary focus:ring-2 focus:ring-primary-light transition"
+                                className="w-full pl-12 pr-4 py-4 bg-white border-2 border-neutral-200 rounded-2xl focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all text-secondary shadow-sm"
                             />
                         </div>
                     </div>
                 </div>
 
                 {loading ? (
-                    <div className="flex justify-center items-center h-64">
+                    <div className="flex flex-col justify-center items-center h-96 gap-4">
                         <Loader2 className="w-12 h-12 animate-spin text-primary" />
+                        <p className="text-neutral-500 font-medium">Loading our collection...</p>
                     </div>
                 ) : filteredProducts.length === 0 ? (
-                    <div className="bg-white rounded-2xl shadow-xl border border-neutral-200 overflow-hidden">
-                        <div className="text-center py-20 px-6">
-                            <Package className="w-16 h-16 text-neutral-400 mx-auto mb-4" />
-                            <h3 className="text-2xl font-bold text-secondary mb-2">
-                                {searchQuery ? "No products found" : "No products available"}
+                    <div className="bg-white rounded-3xl shadow-xl border border-neutral-100 overflow-hidden">
+                        <div className="text-center py-24 px-6">
+                            <Package className="w-20 h-20 text-neutral-300 mx-auto mb-6" />
+                            <h3 className="text-2xl font-bold text-secondary mb-3">
+                                {searchQuery ? "No matches found" : "Collection empty"}
                             </h3>
-                            <p className="text-neutral-600">
+                            <p className="text-neutral-500 max-w-md mx-auto">
                                 {searchQuery
-                                    ? "Try adjusting your search terms"
-                                    : "Check back soon for new products"}
+                                    ? "We couldn't find anything matching your search. Try different keywords or browse by category."
+                                    : "Our premium collection is currently being updated. Check back soon!"}
                             </p>
                         </div>
                     </div>
                 ) : (
                     <>
-                        <div className="mb-6 text-neutral-600">
-                            Showing {filteredProducts.length} product
-                            {filteredProducts.length !== 1 ? "s" : ""}
+                        <div className="mb-8 flex items-center justify-between text-neutral-600">
+                            <p className="font-medium">
+                                Showing {filteredProducts.length} premium product
+                                {filteredProducts.length !== 1 ? "s" : ""}
+                            </p>
                         </div>
 
                         {/* Products Grid */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
                             {filteredProducts.map((product, index) => {
                                 const firstSize =
                                     product.sizes && product.sizes.length > 0
@@ -104,71 +111,65 @@ const Products = () => {
 
                                 return (
                                     <Link
-                                        key={product._id || product.id || index}
-                                        href={`/newarrivalorderpage/${product.id || product._id}`} // prefer id from Supabase
-                                        className="bg-white rounded-xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] group block"
+                                        key={product.id || index}
+                                        href={`/shop/${product.type}/${product.shape.toLowerCase()}`}
+                                        className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 group flex flex-col h-full border border-neutral-100"
                                     >
                                         {/* Product Image */}
-                                        <div className="relative bg-neutral-100 aspect-square overflow-hidden">
+                                        <div className="relative aspect-square overflow-hidden bg-neutral-100">
                                             <img
                                                 src={product.image || "https://via.placeholder.com/400?text=No+Image"}
                                                 alt={product.title}
-                                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                                             />
-                                            {index < 3 && (
-                                                <div className="absolute top-3 left-3">
-                                                    <span className="bg-secondary text-white text-xs font-medium px-2 py-1 rounded">
-                                                        NEW
+                                            <div className="absolute top-4 left-4 flex flex-col gap-2">
+                                                <span className="bg-white/90 backdrop-blur-md text-secondary text-[10px] font-bold px-3 py-1.5 rounded-full shadow-sm uppercase tracking-wider">
+                                                    {product.type}
+                                                </span>
+                                                {product.shape && (
+                                                    <span className="bg-primary text-white text-[10px] font-bold px-3 py-1.5 rounded-full shadow-sm uppercase tracking-wider">
+                                                        {product.shape}
                                                     </span>
-                                                </div>
-                                            )}
+                                                )}
+                                            </div>
                                         </div>
 
                                         {/* Product Info */}
-                                        <div className="p-4">
-                                            <h3 className="text-lg font-bold text-secondary mb-2 line-clamp-2 min-h-[3.5rem]">
+                                        <div className="p-5 flex flex-col flex-1">
+                                            <h3 className="text-xl font-bold text-secondary mb-3 group-hover:text-primary transition-colors min-h-[3.5rem] line-clamp-2">
                                                 {product.title}
                                             </h3>
 
                                             {/* Price */}
-                                            <div className="flex items-center gap-2 mb-3">
+                                            <div className="flex items-center gap-2 mb-6">
                                                 {firstSize ? (
-                                                    <>
-                                                        <span className="text-xl font-bold text-primary">
-                                                            ₹{firstSize.price}
-                                                        </span>
-                                                        {firstSize.original &&
-                                                            firstSize.original > firstSize.price && (
+                                                    <div className="flex flex-col">
+                                                        <span className="text-neutral-400 text-xs font-medium">Starting from</span>
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-2xl font-bold text-primary">
+                                                                ₹{firstSize.price}
+                                                            </span>
+                                                            {firstSize.original && firstSize.original > firstSize.price && (
                                                                 <span className="text-neutral-400 line-through text-sm">
                                                                     ₹{firstSize.original}
                                                                 </span>
                                                             )}
-                                                    </>
+                                                        </div>
+                                                    </div>
                                                 ) : (
-                                                    <span className="text-error text-sm font-medium">
-                                                        Price not available
+                                                    <span className="text-neutral-400 text-sm italic">
+                                                        View for pricing
                                                     </span>
                                                 )}
                                             </div>
 
-                                            {/* Rating */}
-                                            <div className="flex items-center mb-4">
-                                                <div className="flex text-warning">
-                                                    {[...Array(5)].map((_, i) => (
-                                                        <span key={i} className="text-sm">
-                                                            {i < Math.round(product.rating || 4) ? "★" : "☆"}
-                                                        </span>
-                                                    ))}
+                                            {/* Action Button */}
+                                            <div className="mt-auto">
+                                                <div className="w-full py-3 px-4 bg-neutral-50 text-secondary rounded-xl font-bold group-hover:bg-primary group-hover:text-white transition-all duration-300 flex items-center justify-center gap-2 border border-neutral-100 group-hover:border-primary">
+                                                    Customize Now
+                                                    <Package className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-opacity" />
                                                 </div>
-                                                <span className="text-neutral-500 text-sm ml-2">
-                                                    ({product.rating || 4})
-                                                </span>
                                             </div>
-
-                                            {/* Buy Now Button */}
-                                            <button className="w-full py-2.5 px-4 bg-primary text-white rounded-lg font-medium hover:bg-primary-hover transition-colors">
-                                                Buy Now
-                                            </button>
                                         </div>
                                     </Link>
                                 );

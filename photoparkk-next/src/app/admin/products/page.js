@@ -11,7 +11,7 @@ const ProductsContent = () => {
     const pathname = usePathname();
 
     // Get default tab from URL or fallback
-    const defaultTab = searchParams.get('tab') || 'newarrival';
+    const defaultTab = searchParams.get('tab') || 'acrylic';
     const [activeTab, setActiveTab] = useState(defaultTab);
 
     // Sync state with URL if changed internally
@@ -28,9 +28,6 @@ const ProductsContent = () => {
         }`;
 
     // Field Configs
-    const DEFAULT_FIELDS = ['title', 'content', 'image', 'thickness', 'stock', 'sizes'];
-    const DEFAULT_JSON = ['sizes'];
-
     const ACRYLIC_FIELDS = ['title', 'content', 'image', 'shape', 'sizes', 'thickness', 'stock'];
     const ACRYLIC_JSON = ['sizes', 'thickness'];
 
@@ -53,36 +50,20 @@ const ProductsContent = () => {
             </div>
 
             <div className="flex border-b border-neutral-200 overflow-x-auto">
-                <button onClick={() => handleTabChange("newarrival")} className={TAB_CLASSES("newarrival")}>New Arrivals</button>
-                <button onClick={() => handleTabChange("specialoffer")} className={TAB_CLASSES("specialoffer")}>Special Offers</button>
                 <button onClick={() => handleTabChange("acrylic")} className={TAB_CLASSES("acrylic")}>Acrylic</button>
                 <button onClick={() => handleTabChange("canvas")} className={TAB_CLASSES("canvas")}>Canvas</button>
                 <button onClick={() => handleTabChange("backlight")} className={TAB_CLASSES("backlight")}>Backlight</button>
             </div>
 
             <div className="min-h-[400px]">
-                {activeTab === "newarrival" && (
-                    <ProductManager
-                        apiEndpoint="newarrivals"
-                        title="New Arrivals"
-                        allowedFields={DEFAULT_FIELDS}
-                        jsonFields={DEFAULT_JSON}
-                    />
-                )}
-                {activeTab === "specialoffer" && (
-                    <ProductManager
-                        apiEndpoint="specialoffers"
-                        title="Special Offers"
-                        allowedFields={DEFAULT_FIELDS}
-                        jsonFields={DEFAULT_JSON}
-                    />
-                )}
                 {activeTab === "acrylic" && (
                     <ProductManager
                         apiEndpoint="frames/acrylic"
                         title="Acrylic Frames"
                         allowedFields={ACRYLIC_FIELDS}
                         jsonFields={ACRYLIC_JSON}
+                        canAdd={false}
+                        canDelete={false}
                     />
                 )}
                 {activeTab === "canvas" && (
@@ -91,6 +72,8 @@ const ProductsContent = () => {
                         title="Canvas Frames"
                         allowedFields={CANVAS_FIELDS}
                         jsonFields={CANVAS_JSON}
+                        canAdd={false}
+                        canDelete={false}
                     />
                 )}
                 {activeTab === "backlight" && (
@@ -99,6 +82,8 @@ const ProductsContent = () => {
                         title="Backlight Frames"
                         allowedFields={BACKLIGHT_FIELDS}
                         jsonFields={BACKLIGHT_JSON}
+                        canAdd={false}
+                        canDelete={false}
                     />
                 )}
             </div>

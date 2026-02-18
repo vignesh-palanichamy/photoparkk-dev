@@ -162,9 +162,9 @@ const Navbar = () => {
                     href="/products"
                     className="block px-4 py-3 text-sm text-neutral-700 hover:bg-primary-light hover:text-primary transition-all duration-200 border-l-2 border-transparent hover:border-primary"
                   >
-                    <div className="font-medium">All Products</div>
+                    <div className="font-medium">Our Collection</div>
                     <div className="text-xs text-neutral-500 mt-0.5">
-                      Browse our complete collection
+                      Explore all customizable frames
                     </div>
                   </Link>
                   <Link
@@ -356,7 +356,7 @@ const Navbar = () => {
                   onClick={() => setMobileMenuOpen(false)}
                   className="block px-4 py-2 rounded-lg text-neutral-600 hover:bg-primary-light hover:text-primary transition-all duration-200"
                 >
-                  All Products
+                  Our Collection
                 </Link>
                 <Link
                   href="/shop/acrylic"

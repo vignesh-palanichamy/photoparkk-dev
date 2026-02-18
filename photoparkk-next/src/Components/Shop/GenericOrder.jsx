@@ -16,114 +16,7 @@ import axiosInstance from "../../utils/axiosInstance";
 import { toast } from "react-toastify";
 
 // Combined Configuration for all types and shapes
-const PRODUCT_CONFIGS = {
-    acrylic: {
-        portrait: {
-            title: "Portrait Acrylic Customize",
-            sizes: [
-                { label: "8x10", price: 499, original: 699, width: 8, height: 10 },
-                { label: "12x16", price: 699, original: 899, width: 12, height: 16 },
-                { label: "16x20", price: 899, original: 1199, width: 16, height: 20 },
-                { label: "20x30", price: 1999, original: 2499, width: 20, height: 30 },
-            ]
-        },
-        landscape: {
-            title: "Landscape Acrylic Customize",
-            sizes: [
-                { label: "10x8", price: 499, original: 699, width: 10, height: 8 },
-                { label: "16x12", price: 699, original: 899, width: 16, height: 12 },
-                { label: "20x16", price: 899, original: 1199, width: 20, height: 16 },
-                { label: "30x20", price: 1999, original: 2499, width: 30, height: 20 },
-            ]
-        },
-        square: {
-            title: "Square Acrylic Customize",
-            sizes: [
-                { label: "8x8", price: 399, original: 599, width: 8, height: 8 },
-                { label: "12x12", price: 699, original: 899, width: 12, height: 12 },
-                { label: "16x16", price: 999, original: 1299, width: 16, height: 16 },
-                { label: "24x24", price: 1999, original: 2499, width: 24, height: 24 },
-            ]
-        },
-        round: {
-            title: "Round Acrylic Customize",
-            sizes: [
-                { label: "8x8", price: 449, original: 649, width: 8, height: 8 },
-                { label: "12x12", price: 749, original: 949, width: 12, height: 12 },
-                { label: "16x16", price: 1099, original: 1399, width: 16, height: 16 },
-                { label: "24x24", price: 2199, original: 2699, width: 24, height: 24 },
-            ]
-        },
-        hexagon: {
-            title: "Hexagon Acrylic Customize",
-            sizes: [
-                { label: "8x8", price: 449, original: 649, width: 8, height: 8 },
-                { label: "12x12", price: 749, original: 949, width: 12, height: 12 },
-                { label: "16x16", price: 1099, original: 1399, width: 16, height: 16 },
-            ]
-        },
-        love: {
-            title: "Love/Heart Acrylic Customize",
-            sizes: [
-                { label: "8x8", price: 499, original: 699, width: 8, height: 8 },
-                { label: "12x12", price: 799, original: 999, width: 12, height: 12 },
-                { label: "16x16", price: 1199, original: 1499, width: 16, height: 16 },
-            ]
-        }
-    },
-    canvas: {
-        portrait: {
-            title: "Portrait Canvas Customize",
-            sizes: [
-                { label: "8x10", price: 399, original: 599, width: 8, height: 10 },
-                { label: "12x16", price: 599, original: 799, width: 12, height: 16 },
-                { label: "16x20", price: 799, original: 1099, width: 16, height: 20 },
-            ]
-        },
-        landscape: {
-            title: "Landscape Canvas Customize",
-            sizes: [
-                { label: "10x8", price: 399, original: 599, width: 10, height: 8 },
-                { label: "16x12", price: 599, original: 799, width: 16, height: 12 },
-                { label: "20x16", price: 799, original: 1099, width: 20, height: 16 },
-            ]
-        },
-        square: {
-            title: "Square Canvas Customize",
-            sizes: [
-                { label: "8x8", price: 299, original: 499, width: 8, height: 8 },
-                { label: "12x12", price: 549, original: 749, width: 12, height: 12 },
-                { label: "16x16", price: 849, original: 1149, width: 16, height: 16 },
-            ]
-        }
-    },
-    backlight: {
-        portrait: {
-            title: "Portrait Backlight Customize",
-            sizes: [
-                { label: "8x10", price: 999, original: 1499, width: 8, height: 10 },
-                { label: "12x16", price: 1499, original: 1999, width: 12, height: 16 },
-                { label: "16x20", price: 1999, original: 2999, width: 16, height: 20 },
-            ]
-        },
-        landscape: {
-            title: "Landscape Backlight Customize",
-            sizes: [
-                { label: "10x8", price: 999, original: 1499, width: 10, height: 8 },
-                { label: "16x12", price: 1499, original: 1999, width: 16, height: 12 },
-                { label: "20x16", price: 1999, original: 2999, width: 20, height: 16 },
-            ]
-        },
-        square: {
-            title: "Square Backlight Customize",
-            sizes: [
-                { label: "8x8", price: 899, original: 1399, width: 8, height: 8 },
-                { label: "12x12", price: 1399, original: 1899, width: 12, height: 12 },
-                { label: "16x16", price: 1899, original: 2799, width: 16, height: 16 },
-            ]
-        }
-    }
-};
+const PRODUCT_CONFIGS = {}; // Now fetched from API
 
 const COMMON_HIGHLIGHTS = [
     "High-Quality Finish & Durable Material",
@@ -149,32 +42,53 @@ const GenericOrder = ({ type, shape }) => {
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        if (typeof window !== "undefined") {
-            const storedData = sessionStorage.getItem(`${type}_custom_data`);
-            if (storedData) {
-                const parsed = JSON.parse(storedData);
-                setPhotoData(parsed.photoData);
-            } else {
-                toast.error("No customization data found. Please upload an image first.");
-                router.push(`/shop/${type}/${shape}`);
-                return;
-            }
+        const init = async () => {
+            if (typeof window !== "undefined") {
+                const storedData = sessionStorage.getItem(`${type}_custom_data`);
+                if (storedData) {
+                    const parsed = JSON.parse(storedData);
+                    setPhotoData(parsed.photoData);
+                } else {
+                    toast.error("No customization data found. Please upload an image first.");
+                    router.push(`/shop/${type}/${shape}`);
+                    return;
+                }
 
-            const storedUser = localStorage.getItem("user");
-            if (storedUser) {
-                try {
-                    const parsedUser = JSON.parse(storedUser);
-                    setUserId(parsedUser._id || parsedUser.id);
-                } catch (err) {
-                    console.error("Failed to parse user:", err);
+                const storedUser = localStorage.getItem("user");
+                if (storedUser) {
+                    try {
+                        const parsedUser = JSON.parse(storedUser);
+                        setUserId(parsedUser._id || parsedUser.id);
+                    } catch (err) {
+                        console.error("Failed to parse user:", err);
+                    }
                 }
             }
-        }
 
-        const config = PRODUCT_CONFIGS[type]?.[shape.toLowerCase()] || PRODUCT_CONFIGS.acrylic.portrait;
-        setProductConfig(config);
-        if (config.sizes.length > 0) setSelectedSize(config.sizes[0]);
+            // Fetch product detail from API
+            try {
+                const res = await axiosInstance.get(`frames/${type}?shape=${shape}`);
+                if (res.data && res.data.length > 0) {
+                    const product = res.data[0];
+                    setProductConfig(product);
+                    if (product.sizes && product.sizes.length > 0) {
+                        setSelectedSize(product.sizes[0]);
+                    }
+                    if (product.thickness && Array.isArray(product.thickness) && product.thickness.length > 0) {
+                        setSelectedThickness(product.thickness[0]);
+                    } else if (typeof product.thickness === 'string') {
+                        setSelectedThickness(product.thickness);
+                    }
+                } else {
+                    toast.error("Product configuration not found.");
+                }
+            } catch (err) {
+                console.error("Failed to fetch product config:", err);
+                toast.error("Failed to load product details.");
+            }
+        };
 
+        init();
     }, [type, shape, router]);
 
     const handleAddToCart = async () => {
@@ -344,8 +258,8 @@ const GenericOrder = ({ type, shape }) => {
                                                 key={i}
                                                 onClick={() => setSelectedSize(sizeObj)}
                                                 className={`px-4 py-3 rounded-xl border-2 text-sm font-medium transition-all duration-200 ${selectedSize?.label === sizeObj.label
-                                                        ? "bg-primary text-white border-primary shadow-lg scale-105"
-                                                        : "bg-white text-secondary border-neutral-300 hover:border-primary hover:shadow-md"
+                                                    ? "bg-primary text-white border-primary shadow-lg scale-105"
+                                                    : "bg-white text-secondary border-neutral-300 hover:border-primary hover:shadow-md"
                                                     }`}
                                             >
                                                 <div className="font-bold">{sizeObj.label}</div>
@@ -357,21 +271,21 @@ const GenericOrder = ({ type, shape }) => {
                                     </div>
                                 </div>
 
-                                {/* Thickness Selector (Only for Acrylic) */}
-                                {type === 'acrylic' && (
+                                {/* Thickness Selector */}
+                                {productConfig.thickness && Array.isArray(productConfig.thickness) && productConfig.thickness.length > 0 && (
                                     <div>
                                         <label className="block text-lg font-semibold text-secondary mb-3 flex items-center gap-2">
                                             <Box className="w-5 h-5 text-primary" />
                                             Select Thickness
                                         </label>
                                         <div className="grid grid-cols-3 gap-3">
-                                            {["3mm", "5mm", "8mm"].map((thick, i) => (
+                                            {productConfig.thickness.map((thick, i) => (
                                                 <button
                                                     key={i}
                                                     onClick={() => setSelectedThickness(thick)}
                                                     className={`px-4 py-3 rounded-xl border-2 text-sm font-medium transition-all duration-200 ${selectedThickness === thick
-                                                            ? "bg-primary text-white border-primary shadow-lg scale-105"
-                                                            : "bg-white text-secondary border-neutral-300 hover:border-primary hover:shadow-md"
+                                                        ? "bg-primary text-white border-primary shadow-lg scale-105"
+                                                        : "bg-white text-secondary border-neutral-300 hover:border-primary hover:shadow-md"
                                                         }`}
                                                 >
                                                     {thick}

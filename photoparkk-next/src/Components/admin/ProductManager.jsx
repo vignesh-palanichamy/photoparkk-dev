@@ -8,7 +8,14 @@ import { toast } from "react-toastify";
 const DEFAULT_FIELDS = ['title', 'content', 'image', 'thickness', 'stock', 'sizes'];
 const DEFAULT_JSON_FIELDS = ['sizes'];
 
-const ProductManager = ({ apiEndpoint, title, allowedFields = DEFAULT_FIELDS, jsonFields = DEFAULT_JSON_FIELDS }) => {
+const ProductManager = ({
+    apiEndpoint,
+    title,
+    allowedFields = DEFAULT_FIELDS,
+    jsonFields = DEFAULT_JSON_FIELDS,
+    canAdd = true,
+    canDelete = true
+}) => {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showModal, setShowModal] = useState(false);
@@ -67,6 +74,7 @@ const ProductManager = ({ apiEndpoint, title, allowedFields = DEFAULT_FIELDS, js
     };
 
     const handleAdd = () => {
+        if (!canAdd) return;
         setEditingProduct(null);
         setFormData(getInitialState());
 
@@ -82,6 +90,7 @@ const ProductManager = ({ apiEndpoint, title, allowedFields = DEFAULT_FIELDS, js
     };
 
     const handleDelete = async (id) => {
+        if (!canDelete) return;
         if (!confirm("Delete this product?")) return;
         try {
             await axiosInstance.delete(`${apiEndpoint}/${id}`);
@@ -138,12 +147,14 @@ const ProductManager = ({ apiEndpoint, title, allowedFields = DEFAULT_FIELDS, js
         <div className="bg-white p-6 rounded-xl border border-neutral-100 shadow-sm">
             <div className="flex justify-between items-center mb-6">
                 <h2 className="text-xl font-bold text-secondary">{title}</h2>
-                <button
-                    onClick={handleAdd}
-                    className="bg-primary text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-primary-hover transition-colors"
-                >
-                    <Plus className="w-4 h-4" /> Add Product
-                </button>
+                {canAdd && (
+                    <button
+                        onClick={handleAdd}
+                        className="bg-primary text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-primary-hover transition-colors"
+                    >
+                        <Plus className="w-4 h-4" /> Add Product
+                    </button>
+                )}
             </div>
 
             {loading ? (
@@ -190,7 +201,9 @@ const ProductManager = ({ apiEndpoint, title, allowedFields = DEFAULT_FIELDS, js
                                     <td className="p-3 text-right">
                                         <div className="flex justify-end gap-2">
                                             <button onClick={() => handleEdit(p)} className="p-2 text-primary hover:bg-primary/10 rounded"><Edit className="w-4 h-4" /></button>
-                                            <button onClick={() => handleDelete(p.id)} className="p-2 text-red-500 hover:bg-red-50 rounded"><Trash2 className="w-4 h-4" /></button>
+                                            {canDelete && (
+                                                <button onClick={() => handleDelete(p.id)} className="p-2 text-red-500 hover:bg-red-50 rounded"><Trash2 className="w-4 h-4" /></button>
+                                            )}
                                         </div>
                                     </td>
                                 </tr>
