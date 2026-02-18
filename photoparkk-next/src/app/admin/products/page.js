@@ -23,8 +23,8 @@ const ProductsContent = () => {
     };
 
     const TAB_CLASSES = (tab) => `px-6 py-3 font-medium text-sm transition-colors border-b-2 whitespace-nowrap ${activeTab === tab
-            ? "border-primary text-primary"
-            : "border-transparent text-neutral-500 hover:text-neutral-700"
+        ? "border-primary text-primary"
+        : "border-transparent text-neutral-500 hover:text-neutral-700"
         }`;
 
     // Field Configs
@@ -63,7 +63,7 @@ const ProductsContent = () => {
             <div className="min-h-[400px]">
                 {activeTab === "newarrival" && (
                     <ProductManager
-                        apiEndpoint="/api/newarrivals"
+                        apiEndpoint="newarrivals"
                         title="New Arrivals"
                         allowedFields={DEFAULT_FIELDS}
                         jsonFields={DEFAULT_JSON}
@@ -71,7 +71,7 @@ const ProductsContent = () => {
                 )}
                 {activeTab === "specialoffer" && (
                     <ProductManager
-                        apiEndpoint="/api/specialoffers"
+                        apiEndpoint="specialoffers"
                         title="Special Offers"
                         allowedFields={DEFAULT_FIELDS}
                         jsonFields={DEFAULT_JSON}
@@ -79,7 +79,7 @@ const ProductsContent = () => {
                 )}
                 {activeTab === "acrylic" && (
                     <ProductManager
-                        apiEndpoint="/api/frames/acrylic"
+                        apiEndpoint="frames/acrylic"
                         title="Acrylic Frames"
                         allowedFields={ACRYLIC_FIELDS}
                         jsonFields={ACRYLIC_JSON}
@@ -87,7 +87,7 @@ const ProductsContent = () => {
                 )}
                 {activeTab === "canvas" && (
                     <ProductManager
-                        apiEndpoint="/api/frames/canvas"
+                        apiEndpoint="frames/canvas"
                         title="Canvas Frames"
                         allowedFields={CANVAS_FIELDS}
                         jsonFields={CANVAS_JSON}
@@ -95,7 +95,7 @@ const ProductsContent = () => {
                 )}
                 {activeTab === "backlight" && (
                     <ProductManager
-                        apiEndpoint="/api/frames/backlight"
+                        apiEndpoint="frames/backlight"
                         title="Backlight Frames"
                         allowedFields={BACKLIGHT_FIELDS}
                         jsonFields={BACKLIGHT_JSON}

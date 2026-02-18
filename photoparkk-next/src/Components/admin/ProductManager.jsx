@@ -256,7 +256,8 @@ const ProductManager = ({ apiEndpoint, title, allowedFields = DEFAULT_FIELDS, js
                                                             toast.success("Image uploaded!");
                                                         } catch (err) {
                                                             console.error(err);
-                                                            toast.error("Upload failed");
+                                                            const errMsg = err.response?.data?.message || "Upload failed";
+                                                            toast.error(errMsg);
                                                         }
                                                     }}
                                                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"

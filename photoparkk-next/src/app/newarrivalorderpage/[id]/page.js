@@ -60,7 +60,7 @@ const NewArrivalOrderPage = () => {
         formData.append("image", uploadedImage);
         try {
             // Updated endpoint path
-            const res = await axiosInstance.post("/api/upload-image", formData, {
+            const res = await axiosInstance.post("upload-image", formData, {
                 headers: { "Content-Type": "multipart/form-data" },
             });
             setUploading(false);
@@ -148,7 +148,7 @@ const NewArrivalOrderPage = () => {
             try {
                 // Adjust endpoint to match Next.js API route structure
                 // Assuming /api/newarrivals/[id] exists
-                const res = await axiosInstance.get(`/newarrivals/${id}`);
+                const res = await axiosInstance.get(`newarrivals/${id}`);
 
                 if (res.data) {
                     setProduct(res.data);
@@ -349,8 +349,8 @@ const NewArrivalOrderPage = () => {
                                                     key={i}
                                                     onClick={() => setSelectedSize(sizeObj)}
                                                     className={`px-4 py-3 rounded-xl border-2 text-sm font-medium transition-all duration-200 ${selectedSize?.label === sizeObj.label
-                                                            ? "bg-primary text-white border-primary shadow-lg scale-105"
-                                                            : "bg-white text-secondary border-neutral-300 hover:border-primary hover:shadow-md"
+                                                        ? "bg-primary text-white border-primary shadow-lg scale-105"
+                                                        : "bg-white text-secondary border-neutral-300 hover:border-primary hover:shadow-md"
                                                         }`}
                                                 >
                                                     <div className="font-bold">{sizeObj.label}</div>
@@ -379,8 +379,8 @@ const NewArrivalOrderPage = () => {
                                                     key={i}
                                                     onClick={() => setSelectedThickness(thick)}
                                                     className={`px-4 py-3 rounded-xl border-2 text-sm font-medium transition-all duration-200 ${selectedThickness === thick
-                                                            ? "bg-primary text-white border-primary shadow-lg scale-105"
-                                                            : "bg-white text-secondary border-neutral-300 hover:border-primary hover:shadow-md"
+                                                        ? "bg-primary text-white border-primary shadow-lg scale-105"
+                                                        : "bg-white text-secondary border-neutral-300 hover:border-primary hover:shadow-md"
                                                         }`}
                                                 >
                                                     {thick}

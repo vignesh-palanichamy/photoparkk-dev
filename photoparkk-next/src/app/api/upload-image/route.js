@@ -9,35 +9,34 @@ export async function POST(request) {
         const file = formData.get('image');
 
         if (!file) {
+            console.error("No image file in formData");
             return NextResponse.json({ message: "No image file provided" }, { status: 400 });
         }
 
         const arrayBuffer = await file.arrayBuffer();
-        const buffer = Buffer.from(arrayBuffer);
 
         // Generate a unique file name
-        const fileExt = file.name.split('.').pop();
+        const fileExt = file.name ? file.name.split('.').pop() : 'jpg';
         const fileName = `${uuidv4()}.${fileExt}`;
         const filePath = `uploads/${fileName}`;
 
         // Upload to Supabase Storage
-        // NOTE: Ensure you have created a bucket named 'photos' in Supabase and set its access to PUBLIC.
         const { data, error } = await supabase.storage
             .from('photos')
-            .upload(filePath, buffer, {
+            .upload(filePath, arrayBuffer, {
                 contentType: file.type,
                 upsert: false
             });
 
         if (error) {
-            console.error("Supabase Storage Error:", error);
-            // If error is bucket not found, remind user
+            console.error("Supabase Storage Error Details:", JSON.stringify(error, null, 2));
+
             if (error.message?.includes('bucket not found')) {
                 return NextResponse.json({
                     message: "Supabase storage bucket 'photos' not found. Please create it in your dashboard."
                 }, { status: 500 });
             }
-            return NextResponse.json({ message: error.message }, { status: 500 });
+            return NextResponse.json({ message: error.message || "Storage upload failed" }, { status: 500 });
         }
 
         // Get Public URL
@@ -48,7 +47,7 @@ export async function POST(request) {
         return NextResponse.json({ imageUrl: publicUrl });
 
     } catch (error) {
-        console.error("Upload Error:", error);
-        return NextResponse.json({ message: "Image upload failed" }, { status: 500 });
+        console.error("Upload Error (Catch Block):", error);
+        return NextResponse.json({ message: `Image upload failed: ${error.message}` }, { status: 500 });
     }
 }
