@@ -3,25 +3,22 @@ import React, { useRef, useState, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 import Cropper from "react-easy-crop";
-import { Upload, X, RotateCw, ZoomIn, ArrowRight, AlertTriangle, Sparkles, Image } from "lucide-react";
+import { Upload, X, RotateCw, ZoomIn, ArrowRight, AlertTriangle, Sparkles } from "lucide-react";
 import LoadingBar from "../LoadingBar";
 import { toast } from "react-toastify";
 import axiosInstance from "../../utils/axiosInstance";
 
-const MAX_UPLOAD_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
+const MAX_UPLOAD_SIZE_BYTES = 10 * 1024 * 1024;
 const MAX_UPLOAD_SIZE_MB = 10;
 const CROP_SIZE = 280;
 
 const GenericCustomize = ({ type, shape }) => {
-    // type: "acrylic", "canvas", "backlight"
-    // shape: "portrait", "landscape", "square", "love", "hexagon", "round"
     const [photoData, setPhotoData] = useState(null);
     const [isUploading, setIsUploading] = useState(false);
     const [uploadProgress, setUploadProgress] = useState(0);
     const [isDragging, setIsDragging] = useState(false);
     const [productConfig, setProductConfig] = useState(null);
 
-    // Crop State
     const [crop, setCrop] = useState({ x: 0, y: 0 });
     const [zoom, setZoom] = useState(1);
     const [rotation, setRotation] = useState(0);
@@ -31,11 +28,9 @@ const GenericCustomize = ({ type, shape }) => {
     const fileInputRef = useRef(null);
     const router = useRouter();
 
-    // Labels
     const typeTitle = type.charAt(0).toUpperCase() + type.slice(1);
     const shapeTitle = shape.charAt(0).toUpperCase() + shape.slice(1);
 
-    // Initialize from existing session if available
     useEffect(() => {
         if (typeof window !== "undefined") {
             const storedData = sessionStorage.getItem(`${type}_custom_data`);
@@ -51,9 +46,7 @@ const GenericCustomize = ({ type, shape }) => {
                             setRotation(c.rotation || 0);
                         }
                     }
-                } catch (e) {
-                    // ignore error
-                }
+                } catch (e) { }
             }
         }
     }, [type]);
@@ -62,9 +55,7 @@ const GenericCustomize = ({ type, shape }) => {
         const fetchConfig = async () => {
             try {
                 const res = await axiosInstance.get(`frames/${type}?shape=${shape}`);
-                if (res.data && res.data.length > 0) {
-                    setProductConfig(res.data[0]);
-                }
+                if (res.data && res.data.length > 0) setProductConfig(res.data[0]);
             } catch (err) {
                 console.error("Failed to fetch config", err);
             }
@@ -73,15 +64,8 @@ const GenericCustomize = ({ type, shape }) => {
     }, [type, shape]);
 
     const handleFileUpload = async (file) => {
-        if (!file.type.match("image.*")) {
-            toast.error("Please select a valid image");
-            return;
-        }
-
-        if (file.size > MAX_UPLOAD_SIZE_BYTES) {
-            toast.error(`File too large. Max size is ${MAX_UPLOAD_SIZE_MB}MB.`);
-            return;
-        }
+        if (!file.type.match("image.*")) { toast.error("Please select a valid image"); return; }
+        if (file.size > MAX_UPLOAD_SIZE_BYTES) { toast.error(`File too large. Max size is ${MAX_UPLOAD_SIZE_MB}MB.`); return; }
 
         setIsUploading(true);
         setUploadProgress(0);
@@ -98,7 +82,6 @@ const GenericCustomize = ({ type, shape }) => {
             });
 
             const imageUrl = res.data.imageUrl;
-
             const img = new Image();
             img.onload = () => {
                 if (img.width < 1000 || img.height < 1000) {
@@ -107,17 +90,9 @@ const GenericCustomize = ({ type, shape }) => {
                 } else {
                     setLowResWarning(false);
                 }
-                setPhotoData({
-                    url: imageUrl,
-                    name: file.name,
-                    size: file.size,
-                    type: file.type,
-                    width: img.width,
-                    height: img.height
-                });
+                setPhotoData({ url: imageUrl, name: file.name, size: file.size, type: file.type, width: img.width, height: img.height });
             };
             img.src = imageUrl;
-
             toast.success("Image uploaded!");
         } catch (error) {
             console.error(error);
@@ -127,69 +102,25 @@ const GenericCustomize = ({ type, shape }) => {
         }
     };
 
-    const handleChange = (e) => {
-        if (e.target.files && e.target.files[0]) {
-            handleFileUpload(e.target.files[0]);
-        }
-    };
-
-    const handleDragOver = (e) => {
-        e.preventDefault();
-        setIsDragging(true);
-    };
-
-    const handleDragLeave = (e) => {
-        e.preventDefault();
-        setIsDragging(false);
-    };
-
-    const handleDrop = (e) => {
-        e.preventDefault();
-        setIsDragging(false);
-        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-            handleFileUpload(e.dataTransfer.files[0]);
-        }
-    };
-
-    const handleReplaceClick = () => {
-        fileInputRef.current.click();
-    };
-
-    const handlePreviewClick = () => {
-        setPhotoData(null);
-        setCrop({ x: 0, y: 0 });
-        setZoom(1);
-        setRotation(0);
-    };
-
-    const onCropComplete = useCallback((navigatedArea, croppedAreaPixels) => {
-        setCroppedAreaPixels(croppedAreaPixels);
-    }, []);
+    const handleChange = (e) => { if (e.target.files?.[0]) handleFileUpload(e.target.files[0]); };
+    const handleDragOver = (e) => { e.preventDefault(); setIsDragging(true); };
+    const handleDragLeave = (e) => { e.preventDefault(); setIsDragging(false); };
+    const handleDrop = (e) => { e.preventDefault(); setIsDragging(false); if (e.dataTransfer.files?.[0]) handleFileUpload(e.dataTransfer.files[0]); };
+    const handleReplaceClick = () => fileInputRef.current.click();
+    const handlePreviewClick = () => { setPhotoData(null); setCrop({ x: 0, y: 0 }); setZoom(1); setRotation(0); };
+    const onCropComplete = useCallback((_, croppedAreaPixels) => setCroppedAreaPixels(croppedAreaPixels), []);
 
     const handleContinue = () => {
-        if (!photoData) {
-            toast.error("Please upload an image first.");
-            return;
-        }
-
-        // Save temporary state
+        if (!photoData) { toast.error("Please upload an image first."); return; }
         let existingDetails = {};
         if (typeof window !== "undefined") {
             const stored = sessionStorage.getItem(`${type}_custom_data`);
             if (stored) existingDetails = JSON.parse(stored);
         }
-
         const orderData = {
-            ...existingDetails,
-            type,
-            shape,
-            photoData,
-            configuration: {
-                ...(existingDetails.configuration || {}),
-                crop: { crop, zoom, rotation, croppedAreaPixels }
-            }
+            ...existingDetails, type, shape, photoData,
+            configuration: { ...(existingDetails.configuration || {}), crop: { crop, zoom, rotation, croppedAreaPixels } }
         };
-
         sessionStorage.setItem(`${type}_custom_data`, JSON.stringify(orderData));
         router.push(`/shop/${type}/${shape.toLowerCase()}/size`);
     };
@@ -198,279 +129,491 @@ const GenericCustomize = ({ type, shape }) => {
         switch (shape) {
             case "portrait": return 3 / 4;
             case "landscape": return 4 / 3;
-            case "square":
-            case "round":
-            case "hexagon":
-            case "love": return 1;
             default: return 1;
         }
     };
 
-    const getCropShapeProps = () => {
-        // We handle custom masks manually, so we tell Cropper to treat everything as 'rect'
-        // 'round' is supported natively but we can also standardise on the mask system for consistency if we want.
-        // For now, let's let Cropper handle round if it can, but for consistency with the mask system:
-        return { cropShape: 'rect' }; // We will visually mask it ourselves
-    };
+    const pageTitle = productConfig ? `Customize ${productConfig.title}` : `Customize Your ${shapeTitle} Frame`;
+    const pageDesc = productConfig?.content || `Upload your favourite photo and see it come to life in a beautiful ${typeTitle.toLowerCase()} ${shapeTitle} frame.`;
 
     return (
-        <div className="bg-neutral-50 min-h-screen pt-[100px] pb-12 font-[Poppins]">
-            <div className="max-w-5xl mx-auto px-4 lg:px-8">
+        <>
+            <style>{`
+                /* Site palette: primary #0071e3 | secondary #1d1d1f | primary-light #e6f2ff */
 
-                {/* Header */}
-                <div className="text-center mb-8">
-                    <div className="inline-flex items-center gap-2 bg-primary text-white px-6 py-2 rounded-full mb-4">
-                        <Sparkles className="w-5 h-5" />
-                        <span className="font-semibold">{productConfig?.title || `${typeTitle} ${shapeTitle} Frame`}</span>
+                .gc-page {
+                    min-height: 100vh;
+                    background: #ffffff;
+                    padding-top: 90px;
+                    padding-bottom: 80px;
+                    font-family: 'Poppins', sans-serif;
+                }
+
+                /* ── Breadcrumb ── */
+                .gc-breadcrumb {
+                    max-width: 900px; margin: 0 auto;
+                    padding: 0 24px 28px;
+                    display: flex; align-items: center; gap: 8px;
+                    font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+                    color: #a3a3a3;
+                }
+                .gc-breadcrumb-sep { color: #d4d4d4; }
+                .gc-breadcrumb-active { color: #0071e3; font-weight: 600; }
+
+                /* ── Header ── */
+                .gc-header {
+                    max-width: 900px; margin: 0 auto;
+                    padding: 0 24px 40px;
+                    border-bottom: 1px solid #e5e5e5;
+                    margin-bottom: 40px;
+                    display: flex; align-items: flex-start; justify-content: space-between; gap: 24px;
+                    flex-wrap: wrap;
+                }
+                .gc-eyebrow {
+                    display: inline-flex; align-items: center; gap: 8px;
+                    background: #e6f2ff; border: 1px solid #bfdbfe;
+                    padding: 5px 14px; border-radius: 4px;
+                    font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase;
+                    color: #0051a2; font-weight: 600;
+                    margin-bottom: 14px;
+                }
+                .gc-title {
+                    font-family: 'Poppins', sans-serif;
+                    font-size: clamp(1.6rem, 3.5vw, 2.2rem);
+                    font-weight: 700; color: #1d1d1f;
+                    line-height: 1.2; letter-spacing: -0.4px;
+                    margin-bottom: 10px;
+                }
+                .gc-title em { font-style: normal; font-weight: 800; color: #0071e3; }
+                .gc-desc {
+                    font-size: 13px; color: #737373; line-height: 1.75;
+                    font-weight: 300; max-width: 480px;
+                }
+                .gc-step-indicator {
+                    display: flex; flex-direction: column; align-items: flex-end; gap: 6px;
+                    flex-shrink: 0;
+                }
+                .gc-step-label {
+                    font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+                    color: #a3a3a3; font-weight: 500;
+                }
+                .gc-step-dots { display: flex; gap: 6px; align-items: center; }
+                .gc-dot { width: 6px; height: 6px; border-radius: 50%; }
+                .gc-dot.done { background: #0071e3; }
+                .gc-dot.active { width: 20px; border-radius: 3px; background: #1d1d1f; }
+                .gc-dot.pending { background: #e5e5e5; }
+
+                /* ── Main Card ── */
+                .gc-main { max-width: 900px; margin: 0 auto; padding: 0 24px; }
+                .gc-card {
+                    background: #fff;
+                    border: 1px solid #e5e5e5;
+                    border-radius: 20px;
+                    overflow: hidden;
+                    box-shadow: 0 4px 24px rgba(0,0,0,0.06);
+                }
+
+                /* ── Card Header ── */
+                .gc-card-header {
+                    padding: 20px 28px;
+                    background: linear-gradient(135deg, #1d1d1f 0%, #2d2d2f 100%);
+                    display: flex; align-items: center; justify-content: space-between;
+                }
+                .gc-card-header-title {
+                    font-family: 'Poppins', sans-serif;
+                    font-size: 15px; font-weight: 600; color: #f5f5f7;
+                    display: flex; align-items: center; gap: 10px;
+                    letter-spacing: 0.1px;
+                }
+                .gc-card-header-icon {
+                    width: 32px; height: 32px; border-radius: 50%;
+                    background: rgba(0,113,227,0.2);
+                    border: 1px solid rgba(0,113,227,0.4);
+                    display: flex; align-items: center; justify-content: center;
+                    flex-shrink: 0;
+                }
+                .gc-card-header-badge {
+                    font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+                    color: rgba(245,245,247,0.55); font-family: 'Poppins', sans-serif;
+                    font-weight: 500;
+                }
+
+                /* ── Upload Zone ── */
+                .gc-card-body { padding: 28px; }
+                .gc-upload-zone {
+                    border: 1.5px dashed;
+                    border-radius: 12px;
+                    padding: 56px 24px;
+                    text-align: center;
+                    transition: all 0.3s;
+                    cursor: pointer;
+                    display: flex; flex-direction: column; align-items: center; gap: 20px;
+                }
+                .gc-upload-zone.idle {
+                    border-color: #e5e5e5;
+                    background: #fafafa;
+                }
+                .gc-upload-zone.idle:hover {
+                    border-color: #0071e3;
+                    background: #e6f2ff;
+                }
+                .gc-upload-zone.dragging {
+                    border-color: #0071e3;
+                    background: #e6f2ff;
+                    transform: scale(1.01);
+                }
+                .gc-upload-icon-wrap {
+                    width: 64px; height: 64px; border-radius: 50%;
+                    background: #f5f5f7; border: 1px solid #e5e5e5;
+                    display: flex; align-items: center; justify-content: center;
+                    transition: all 0.3s;
+                }
+                .gc-upload-zone.dragging .gc-upload-icon-wrap,
+                .gc-upload-zone.idle:hover .gc-upload-icon-wrap {
+                    background: #e6f2ff; border-color: #0071e3;
+                }
+                .gc-upload-title {
+                    font-family: 'Poppins', sans-serif;
+                    font-size: 17px; font-weight: 600; color: #1d1d1f;
+                    margin-bottom: 6px;
+                }
+                .gc-upload-sub { font-size: 12px; color: #737373; font-weight: 300; }
+                .gc-upload-hint {
+                    font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+                    color: #a3a3a3; font-weight: 500;
+                }
+                .gc-browse-btn {
+                    display: inline-flex; align-items: center; gap: 8px;
+                    padding: 12px 28px;
+                    background: #0071e3;
+                    color: #fff;
+                    font-size: 11px; font-weight: 600; letter-spacing: 2px;
+                    text-transform: uppercase;
+                    border: none; border-radius: 6px; cursor: pointer;
+                    transition: all 0.3s;
+                    box-shadow: 0 4px 16px rgba(0,113,227,0.35);
+                }
+                .gc-browse-btn:hover {
+                    background: #0077ed;
+                    box-shadow: 0 8px 24px rgba(0,113,227,0.45);
+                    transform: translateY(-1px);
+                }
+                .gc-browse-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+                /* ── Crop Area ── */
+                .gc-crop-wrap {
+                    position: relative;
+                    height: 420px;
+                    border-radius: 12px 12px 0 0;
+                    overflow: hidden;
+                    background: #1a1a2e;
+                }
+
+                /* ── Crop Controls ── */
+                .gc-controls {
+                    background: #fff;
+                    border: 1px solid #e5e5e5;
+                    border-top: none;
+                    border-radius: 0 0 12px 12px;
+                    padding: 14px 24px;
+                    display: flex; align-items: center; gap: 24px;
+                    flex-wrap: wrap;
+                    justify-content: center;
+                }
+                .gc-ctrl-group { display: flex; align-items: center; gap: 10px; }
+                .gc-ctrl-label {
+                    font-size: 9px; letter-spacing: 2px; text-transform: uppercase;
+                    color: #737373; font-weight: 600; white-space: nowrap;
+                }
+                .gc-slider {
+                    -webkit-appearance: none;
+                    width: 140px; height: 3px;
+                    background: linear-gradient(90deg, #0071e3, #60a5fa);
+                    border-radius: 2px; outline: none; cursor: pointer;
+                }
+                .gc-slider::-webkit-slider-thumb {
+                    -webkit-appearance: none;
+                    width: 14px; height: 14px; border-radius: 50%;
+                    background: #1d1d1f; border: 2px solid #0071e3;
+                    cursor: pointer;
+                }
+                .gc-reset-btn {
+                    font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+                    color: #0071e3; font-weight: 600;
+                    background: #e6f2ff; border: 1px solid #bfdbfe;
+                    border-radius: 4px; cursor: pointer;
+                    padding: 6px 14px; transition: all 0.2s;
+                }
+                .gc-reset-btn:hover { background: #0071e3; color: #fff; }
+
+                /* ── Low Res Warning ── */
+                .gc-low-res-badge {
+                    position: absolute; top: 16px; left: 16px; z-index: 20;
+                    background: rgba(255,255,255,0.96); backdrop-filter: blur(12px);
+                    border: 1px solid rgba(255,170,0,0.3);
+                    color: #a05e00; padding: 8px 16px;
+                    border-radius: 8px; font-size: 12px; font-weight: 600;
+                    display: flex; align-items: center; gap: 8px;
+                    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+                }
+
+                /* ── Footer ── */
+                .gc-footer {
+                    margin-top: 28px; padding-top: 24px;
+                    border-top: 1px solid #f5f5f5;
+                    display: flex; align-items: center; justify-content: space-between;
+                    gap: 16px; flex-wrap: wrap;
+                }
+                .gc-remove-btn {
+                    display: inline-flex; align-items: center; gap: 8px;
+                    padding: 10px 20px;
+                    background: #fff; border: 1px solid #e5e5e5;
+                    border-radius: 6px; cursor: pointer;
+                    font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase;
+                    font-weight: 600; color: #737373;
+                    transition: all 0.25s;
+                }
+                .gc-remove-btn:hover {
+                    border-color: #0071e3; color: #0071e3;
+                    background: #e6f2ff;
+                }
+                .gc-continue-btn {
+                    display: inline-flex; align-items: center; gap: 10px;
+                    padding: 14px 36px;
+                    background: #0071e3;
+                    color: #fff;
+                    font-size: 12px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase;
+                    border: none; border-radius: 6px; cursor: pointer;
+                    transition: all 0.3s;
+                    box-shadow: 0 4px 20px rgba(0,113,227,0.35);
+                }
+                .gc-continue-btn:hover {
+                    background: #0077ed;
+                    transform: translateY(-2px);
+                    box-shadow: 0 8px 28px rgba(0,113,227,0.45);
+                }
+                .gc-no-photo-hint {
+                    font-size: 12px; color: #a3a3a3; letter-spacing: 0.5px; font-style: italic;
+                    font-family: 'Poppins', sans-serif;
+                }
+
+                /* ── Tips Row ── */
+                .gc-tips {
+                    margin-top: 24px; padding: 18px 22px;
+                    background: #e6f2ff; border: 1px solid #bfdbfe;
+                    border-radius: 10px;
+                    display: flex; gap: 28px; flex-wrap: wrap; align-items: center;
+                }
+                .gc-tip {
+                    display: flex; align-items: center; gap: 8px;
+                    font-size: 11px; color: #0051a2; font-weight: 400;
+                }
+                .gc-tip-dot {
+                    width: 4px; height: 4px; border-radius: 50%;
+                    background: #0071e3; flex-shrink: 0;
+                }
+
+                /* ── Upload Modal ── */
+                .gc-modal-overlay {
+                    position: fixed; inset: 0;
+                    background: rgba(10,15,30,0.7);
+                    backdrop-filter: blur(12px);
+                    display: flex; align-items: center; justify-content: center;
+                    z-index: 50;
+                }
+                .gc-modal {
+                    background: #fff; border-radius: 20px;
+                    padding: 40px; width: 360px; text-align: center;
+                    box-shadow: 0 32px 80px rgba(0,0,0,0.2);
+                    border: 1px solid #e5e5e5;
+                }
+                .gc-modal-title {
+                    font-family: 'Poppins', sans-serif;
+                    font-size: 19px; font-weight: 700; color: #1d1d1f;
+                    margin-bottom: 8px;
+                }
+                .gc-modal-sub {
+                    font-size: 12px; color: #737373; font-weight: 300; margin-bottom: 28px; line-height: 1.7;
+                }
+                .gc-progress-track {
+                    height: 3px; background: #f5f5f5; border-radius: 2px; overflow: hidden; margin-bottom: 10px;
+                }
+                .gc-progress-bar {
+                    height: 100%;
+                    background: linear-gradient(90deg, #0071e3, #60a5fa);
+                    border-radius: 2px; transition: width 0.3s;
+                }
+                .gc-progress-text {
+                    font-size: 11px; color: #a3a3a3; letter-spacing: 1px; font-weight: 500;
+                }
+            `}</style>
+
+            <div className="gc-page">
+                <div style={{ maxWidth: "900px", margin: "0 auto", padding: "0 24px" }}>
+
+                    {/* ── Breadcrumb ── */}
+                    <div className="gc-breadcrumb" style={{ padding: "0 0 28px" }}>
+                        <span>Shop</span>
+                        <span className="gc-breadcrumb-sep">›</span>
+                        <span>{typeTitle}</span>
+                        <span className="gc-breadcrumb-sep">›</span>
+                        <span>{shapeTitle}</span>
+                        <span className="gc-breadcrumb-sep">›</span>
+                        <span className="gc-breadcrumb-active">Customise</span>
                     </div>
-                    <h1 className="text-4xl md:text-5xl font-bold text-secondary mb-3">
-                        {productConfig ? `Customize ${productConfig.title}` : `Customize Your ${typeTitle} ${shapeTitle}`}
-                    </h1>
-                    <p className="text-lg text-neutral-600 max-w-2xl mx-auto">
-                        {productConfig?.content || `Upload your favorite photo and see it come to life in a beautiful ${typeTitle.toLowerCase()} frame`}
-                    </p>
-                </div>
 
-                <input
-                    type="file"
-                    ref={fileInputRef}
-                    onChange={handleChange}
-                    accept="image/*"
-                    className="hidden"
-                />
+                    {/* ── Header ── */}
+                    <div className="gc-header" style={{ padding: "0 0 40px" }}>
+                        <div>
+                            <div className="gc-eyebrow">
+                                <Sparkles size={10} color="#0051a2" />
+                                {productConfig?.title || `${typeTitle} · ${shapeTitle} Frame`}
+                            </div>
+                            <h1 className="gc-title">
+                                Customise Your <em>{shapeTitle}</em> Frame
+                            </h1>
+                            <p className="gc-desc">{pageDesc}</p>
+                        </div>
+                        <div className="gc-step-indicator">
+                            <span className="gc-step-label">Step 02 / 03</span>
+                            <div className="gc-step-dots">
+                                <div className="gc-dot done" />
+                                <div className="gc-dot active" />
+                                <div className="gc-dot pending" />
+                            </div>
+                        </div>
+                    </div>
 
-                <div className="max-w-4xl mx-auto">
-                    {/* Upload Section */}
-                    <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-neutral-200">
-                        <div className="bg-primary px-6 py-4">
-                            <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                                <Upload className="w-6 h-6" />
-                                Upload Your Photo
-                            </h2>
+                    {/* ── Hidden File Input ── */}
+                    <input type="file" ref={fileInputRef} onChange={handleChange} accept="image/*" style={{ display: "none" }} />
+
+                    {/* ── Main Card ── */}
+                    <div className="gc-card">
+                        <div className="gc-card-header">
+                            <div className="gc-card-header-title">
+                                <div className="gc-card-header-icon">
+                                    <Upload size={14} color="#60a5fa" />
+                                </div>
+                                {photoData ? "Adjust & Crop Your Photo" : "Upload Your Photo"}
+                            </div>
+                            <span className="gc-card-header-badge">
+                                {photoData ? "Drag to reposition" : `Max ${MAX_UPLOAD_SIZE_MB}MB · JPG, PNG`}
+                            </span>
                         </div>
 
-                        <div className="p-6 relative min-h-[400px]">
-                            {/* SVG Definitions Removed in favor of inline explicit paths handled by JS */}
-
+                        <div className="gc-card-body">
                             {!photoData ? (
                                 <div
+                                    className={`gc-upload-zone ${isDragging ? "dragging" : "idle"}`}
                                     onDragOver={handleDragOver}
                                     onDragLeave={handleDragLeave}
                                     onDrop={handleDrop}
-                                    className={`border-2 border-dashed rounded-xl p-12 text-center transition-all duration-300 h-full flex flex-col justify-center ${isDragging
-                                        ? "border-primary bg-primary-light scale-[1.02]"
-                                        : "border-neutral-300 hover:border-primary hover:bg-neutral-50"
-                                        }`}
+                                    onClick={handleReplaceClick}
                                 >
-                                    <div className="flex flex-col items-center justify-center space-y-6">
-                                        <div
-                                            className={`p-4 rounded-full transition-all ${isDragging
-                                                ? "bg-primary-light scale-110"
-                                                : "bg-neutral-100"
-                                                }`}
-                                        >
-                                            <Upload
-                                                className={`w-12 h-12 transition-colors ${isDragging ? "text-primary" : "text-neutral-500"
-                                                    }`}
-                                            />
-                                        </div>
-                                        <div>
-                                            <p className="text-lg font-semibold text-neutral-700 mb-2">
-                                                Drag and drop your photo here
-                                            </p>
-                                            <p className="text-sm text-neutral-500 mb-4">or</p>
-                                            <button
-                                                onClick={handleReplaceClick}
-                                                disabled={isUploading}
-                                                className="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-hover transition-all duration-300 font-medium shadow-lg hover:shadow-xl transform hover:scale-105"
-                                            >
-                                                <Upload className="w-5 h-5" />
-                                                Browse Files
-                                            </button>
-                                        </div>
+                                    <div className="gc-upload-icon-wrap">
+                                        <Upload size={26} color={isDragging ? "#0071e3" : "#737373"} />
                                     </div>
+                                    <div>
+                                        <p className="gc-upload-title">Drop your photo here</p>
+                                        <p className="gc-upload-sub">or click anywhere to browse your files</p>
+                                    </div>
+                                    <button
+                                        className="gc-browse-btn"
+                                        onClick={(e) => { e.stopPropagation(); handleReplaceClick(); }}
+                                        disabled={isUploading}
+                                    >
+                                        <Upload size={12} />
+                                        Browse Files
+                                    </button>
+                                    <span className="gc-upload-hint">
+                                        JPG · PNG · WEBP &nbsp;·&nbsp; Max {MAX_UPLOAD_SIZE_MB}MB &nbsp;·&nbsp; Min 1000×1000px recommended
+                                    </span>
                                 </div>
                             ) : (
-                                <div className="relative h-[400px] w-full bg-neutral-900 rounded-lg overflow-hidden">
-                                    <Cropper
-                                        image={photoData.url}
-                                        crop={crop}
-                                        zoom={zoom}
-                                        rotation={rotation}
-                                        aspect={getAspectRatio()}
-                                        cropSize={{ width: CROP_SIZE, height: CROP_SIZE / getAspectRatio() }}
-                                        onCropChange={setCrop}
-                                        onCropComplete={onCropComplete}
-                                        onZoomChange={setZoom}
-                                        onRotationChange={setRotation}
-                                        showGrid={false}
-                                        style={{
-                                            containerStyle: { background: '#1a1a1a' },
-                                            cropAreaStyle: {
-                                                boxShadow: 'none', // Remove default dimmer
-                                                border: 'none',    // Remove default border
-                                                color: 'transparent' // Hide default dimmed overlay interaction
-                                                // We don't use clipPath here anymore
-                                            },
-                                            mediaStyle: {}
-                                        }}
-                                    />
-
-                                    {/* CUSTOM SHAPE MASK OVERLAY */}
-                                    <div className="absolute inset-0 pointer-events-none z-10 flex items-center justify-center">
-                                        {/* 
-                                            SVG Mask Logic:
-                                            We create an SVG that covers the whole area.
-                                            We must position it ABSOLUTE so it doesn't take up space in the flex container 
-                                            and push the centered 'hole' div to the side.
-                                         */}
-                                        <svg className="absolute inset-0" width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
-                                            <defs>
-                                                <mask id="shape-mask" x="0" y="0" width="100%" height="100%" maskUnits="userSpaceOnUse">
-                                                    {/* 1. Everything visible (White) */}
-                                                    <rect x="0" y="0" width="100%" height="100%" fill="white" />
-                                                    {/* Note: We rely on the CSS box-shadow trick for the visual blackout now, 
-                                                        so this SVG mask might be redundant if we use the 'box-shadow' method fully.
-                                                        But let's keep the structure clean. 
-                                                        actually, if we use the box-shadow method on the child div, we don't strictly need this parent SVG 
-                                                        unless we want to mask out the image itself (which we can't do easily over the canvas).
-                                                        
-                                                        The box-shadow method (below) creates the visual 'dimmed' overlay.
-                                                    */}
-                                                </mask>
-                                            </defs>
-                                        </svg>
-
-                                        {/* 
-                                            CSS SHAPE-OUTSIDE / BOX-SHADOW APPROACH
-                                            This div is centered by the parent flex container.
-                                         */}
-                                        <div
+                                <>
+                                    <div className="gc-crop-wrap">
+                                        <Cropper
+                                            image={photoData.url}
+                                            crop={crop}
+                                            zoom={zoom}
+                                            rotation={rotation}
+                                            aspect={getAspectRatio()}
+                                            cropSize={{ width: CROP_SIZE, height: CROP_SIZE / getAspectRatio() }}
+                                            onCropChange={setCrop}
+                                            onCropComplete={onCropComplete}
+                                            onZoomChange={setZoom}
+                                            onRotationChange={setRotation}
+                                            showGrid={false}
                                             style={{
-                                                width: CROP_SIZE,
-                                                height: CROP_SIZE / getAspectRatio(),
-                                                boxShadow: '0 0 0 9999px rgba(0,0,0,0.6)', // Increased spread to ensure coverage
-                                                borderRadius: shape === 'round' ? '50%' : '0%', // Use CSS radius for round to be smoother
+                                                containerStyle: { background: "#1a1a2e" },
+                                                cropAreaStyle: {
+                                                    border: "2px solid #0071e3",
+                                                    boxShadow: "0 0 0 9999px rgba(0,0,0,0.55)",
+                                                    borderRadius: shape === "round" ? "50%" : "4px",
+                                                },
                                             }}
-                                            className="relative"
-                                        >
-                                            <svg className="absolute inset-0 overflow-visible" width="100%" height="100%" viewBox="0 0 1 1">
-                                                {/* 
-                                                    This SVG is exactly the size of the crop area.
-                                                    We draw a path that is a HUGE rectangle (hole's outside) MINUS the internal shape.
-                                                    This ensures the 'ears' of non-rectangular shapes (like the corners of the hexagon) 
-                                                    are covered by the overlay if the box-shadow doesn't catch them (box shadow is rect/rounded).
-                                                */}
-                                                <path
-                                                    d={
-                                                        shape === 'love'
-                                                            ? "M -10 -10 H 10 V 10 H -10 Z M 0.5 0.9 C 0.5 0.9 0.9 0.65 0.9 0.4 C 0.9 0.2 0.75 0.1 0.6 0.1 C 0.5 0.1 0.45 0.2 0.45 0.2 C 0.45 0.2 0.4 0.1 0.3 0.1 C 0.15 0.1 0 0.2 0 0.4 C 0 0.65 0.4 0.9 0.4 0.9 L 0.5 0.9 Z" // Rect Clockwise, Heart Counter-Clockwise
-                                                            : shape === 'hexagon'
-                                                                ? "M -10 -10 H 10 V 10 H -10 Z M 0.5 0 L 0.933 0.25 V 0.75 L 0.5 1 L 0.067 0.75 V 0.25 Z"
-                                                                : shape === 'round'
-                                                                    ? "M -10 -10 H 10 V 10 H -10 Z M 0.5 0.5 m -0.5 0 a 0.5 0.5 0 1 0 1 0 a 0.5 0.5 0 1 0 -1 0"
-                                                                    : "M -10 -10 H 10 V 10 H -10 Z M 0 0 H 1 V 1 H 0 Z" // Square hole
-                                                    }
-                                                    fill="rgba(0,0,0,0.6)"
-                                                    fillRule="evenodd"
-                                                    transform="scale(1)"
-                                                // The path coordinates for the shape are 0..1 (viewBox 0 0 1 1).
-                                                // The huge rect is -10..10 (relative to 1x1).
-                                                />
-                                            </svg>
+                                        />
 
-                                            {/* Visual Border for the shape */}
-                                            <svg className="absolute inset-0 overflow-visible pointer-events-none" width="100%" height="100%" viewBox="0 0 1 1">
-                                                <path
-                                                    d={
-                                                        shape === 'love'
-                                                            ? "M 0.5 0.9 C 0.5 0.9 0.9 0.65 0.9 0.4 C 0.9 0.2 0.75 0.1 0.6 0.1 C 0.5 0.1 0.45 0.2 0.45 0.2 C 0.45 0.2 0.4 0.1 0.3 0.1 C 0.15 0.1 0 0.2 0 0.4 C 0 0.65 0.4 0.9 0.4 0.9 L 0.5 0.9 Z"
-                                                            : shape === 'hexagon'
-                                                                ? "M 0.5 0 L 0.933 0.25 V 0.75 L 0.5 1 L 0.067 0.75 V 0.25 Z"
-                                                                : shape === 'round'
-                                                                    ? "M 0.5 0.5 m -0.5 0 a 0.5 0.5 0 1 0 1 0 a 0.5 0.5 0 1 0 -1 0"
-                                                                    : "M 0 0 H 1 V 1 H 0 Z"
-                                                    }
-                                                    fill="none"
-                                                    stroke="white"
-                                                    strokeWidth="0.015"
-                                                    vectorEffect="non-scaling-stroke"
-                                                    className="drop-shadow-md"
-                                                />
-                                            </svg>
-                                        </div>
+                                        {lowResWarning && (
+                                            <div className="gc-low-res-badge">
+                                                <AlertTriangle size={14} color="#c97a00" />
+                                                Low resolution — print quality may be reduced
+                                            </div>
+                                        )}
                                     </div>
 
-                                    {lowResWarning && (
-                                        <div className="absolute top-6 left-6 bg-white/90 backdrop-blur text-error px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 z-20 shadow-xl border border-error/20 animate-pulse">
-                                            <AlertTriangle className="w-5 h-5" />
-                                            Low Resolution Image
+                                    {/* Controls — outside the cropper, below the image */}
+                                    <div className="gc-controls">
+                                        <div className="gc-ctrl-group">
+                                            <ZoomIn size={14} color="#737373" />
+                                            <span className="gc-ctrl-label">Zoom</span>
+                                            <input type="range" className="gc-slider" min={1} max={3} step={0.05} value={zoom} onChange={(e) => setZoom(Number(e.target.value))} />
                                         </div>
-                                    )}
-
-                                    {/* Controls Overlay */}
-                                    <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-white/95 backdrop-blur-xl p-4 rounded-2xl shadow-2xl border border-white/20 z-20 flex flex-col sm:flex-row items-center gap-6 sm:gap-8 w-[90%] sm:w-auto max-w-xl">
-                                        <div className="flex items-center gap-4 w-full sm:w-48">
-                                            <ZoomIn className="w-5 h-5 text-neutral-400" />
-                                            <div className="flex-1">
-                                                <input
-                                                    type="range"
-                                                    min={1}
-                                                    max={3}
-                                                    step={0.1}
-                                                    value={zoom}
-                                                    onChange={(e) => setZoom(Number(e.target.value))}
-                                                    className="w-full h-1.5 bg-neutral-200 rounded-lg appearance-none cursor-pointer accent-primary"
-                                                />
-                                            </div>
+                                        <div className="gc-ctrl-group">
+                                            <RotateCw size={14} color="#737373" />
+                                            <span className="gc-ctrl-label">Rotate</span>
+                                            <input type="range" className="gc-slider" min={0} max={360} step={1} value={rotation} onChange={(e) => setRotation(Number(e.target.value))} />
                                         </div>
-                                        <div className="flex items-center gap-4 w-full sm:w-48">
-                                            <RotateCw className="w-5 h-5 text-neutral-400" />
-                                            <div className="flex-1">
-                                                <input
-                                                    type="range"
-                                                    min={0}
-                                                    max={360}
-                                                    step={1}
-                                                    value={rotation}
-                                                    onChange={(e) => setRotation(Number(e.target.value))}
-                                                    className="w-full h-1.5 bg-neutral-200 rounded-lg appearance-none cursor-pointer accent-primary"
-                                                />
-                                            </div>
-                                        </div>
-                                        <button onClick={() => { setZoom(1); setRotation(0); }} className="text-sm font-semibold text-primary hover:text-primary-dark whitespace-nowrap px-2">
-                                            Reset
-                                        </button>
+                                        <button className="gc-reset-btn" onClick={() => { setZoom(1); setRotation(0); }}>Reset</button>
                                     </div>
-                                </div>
+                                </>
                             )}
+
                         </div>
                     </div>
 
-                    {/* Footer Actions */}
-                    <div className="mt-8 flex flex-col sm:flex-row items-center justify-between gap-6 border-t border-neutral-100 pt-8">
+                    {/* ── Tips ── */}
+                    {!photoData && (
+                        <div className="gc-tips">
+                            {[
+                                "Use a high-resolution photo (min. 1000×1000px) for best print quality",
+                                "JPEG or PNG formats work best",
+                                "Bright, well-lit photos produce the most vivid acrylic prints",
+                            ].map((tip, i) => (
+                                <div key={i} className="gc-tip">
+                                    <div className="gc-tip-dot" />
+                                    {tip}
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
+                    {/* ── Footer Actions ── */}
+                    <div className="gc-footer">
                         <div>
                             {photoData && (
-                                <button
-                                    onClick={handlePreviewClick}
-                                    disabled={!photoData}
-                                    className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 ${photoData
-                                        ? "bg-white text-primary hover:bg-neutral-50 shadow-lg hover:shadow-xl transform hover:scale-105"
-                                        : "bg-white/20 text-white/50 cursor-not-allowed"
-                                        }`}
-                                >
-                                    <X className="w-4 h-4" /> Remove Photo
+                                <button className="gc-remove-btn" onClick={handlePreviewClick}>
+                                    <X size={13} />
+                                    Remove Photo
                                 </button>
                             )}
                         </div>
-                        <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto text-center">
-                            {!photoData && <p className="text-neutral-400 text-sm py-3 px-4">Upload a photo to continue</p>}
+                        <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+                            {!photoData && <span className="gc-no-photo-hint">Upload a photo to continue</span>}
                             {photoData && (
-                                <button
-                                    onClick={handleContinue}
-                                    className="px-10 py-4 bg-primary text-white rounded-xl font-bold shadow-lg shadow-primary/30 hover:shadow-xl hover:-translate-y-1 transition-all flex items-center gap-3 w-full sm:w-auto"
-                                >
-                                    Save & Continue <ArrowRight className="w-5 h-5" />
+                                <button className="gc-continue-btn" onClick={handleContinue}>
+                                    Save & Continue
+                                    <ArrowRight size={14} />
                                 </button>
                             )}
                         </div>
@@ -479,16 +622,23 @@ const GenericCustomize = ({ type, shape }) => {
                 </div>
             </div>
 
+            {/* ── Upload Loading Modal ── */}
             {isUploading && (
-                <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 backdrop-blur-sm">
-                    <div className="bg-white p-8 rounded-2xl w-96 shadow-2xl text-center">
-                        <h4 className="text-xl font-bold text-secondary mb-2">Uploading...</h4>
-                        <p className="text-sm text-neutral-500 mb-6">Optimizing your image for high-definition print.</p>
-                        <LoadingBar progress={uploadProgress} />
+                <div className="gc-modal-overlay">
+                    <div className="gc-modal">
+                        <div style={{ width: "48px", height: "48px", borderRadius: "50%", background: "#e6f2ff", border: "1px solid #bfdbfe", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
+                            <Upload size={20} color="#0071e3" />
+                        </div>
+                        <p className="gc-modal-title">Uploading your photo…</p>
+                        <p className="gc-modal-sub">Optimising your image for crystal-clear HD acrylic printing.</p>
+                        <div className="gc-progress-track">
+                            <div className="gc-progress-bar" style={{ width: `${uploadProgress}%` }} />
+                        </div>
+                        <p className="gc-progress-text">{uploadProgress}% complete</p>
                     </div>
                 </div>
             )}
-        </div>
+        </>
     );
 };
 

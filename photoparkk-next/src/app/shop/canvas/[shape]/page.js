@@ -1,19 +1,11 @@
-
 "use client";
 import React from 'react';
 import { useParams } from 'next/navigation';
 import GenericCustomize from '../../../../Components/Shop/GenericCustomize';
 
-// Valid shapes
-const shapes = ["portrait", "landscape", "square"];
-
-export default function CustomizePage() {
+export default function CanvasCustomizePage() {
     const params = useParams();
-    const shape = params.shape;
-
-    if (!shapes.includes(shape)) {
-        return <div>Shape not found</div>;
-    }
+    const shape = params.shape || 'portrait';
 
     return <GenericCustomize type="canvas" shape={shape} />;
 }

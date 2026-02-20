@@ -373,7 +373,7 @@ const GenericSizeSelector = ({ type, shape }) => {
     }
 
     return (
-        <div className="bg-neutral-50 min-h-screen pt-[100px] pb-12 font-[Poppins]">
+        <div className="bg-white min-h-screen pt-[100px] pb-12 font-[Inter]">
             <svg width="0" height="0" className="absolute pointer-events-none">
                 <defs>
                     <clipPath id="love-clip-preview" clipPathUnits="objectBoundingBox">

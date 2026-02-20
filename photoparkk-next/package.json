@@ -20,6 +20,7 @@
     "country-state-city": "^3.2.1",
     "date-fns": "^4.1.0",
     "dotenv": "^17.3.1",
+    "fabric": "^6.9.1",
     "formidable": "^3.5.4",
     "framer-motion": "^12.34.0",
     "html-to-image": "^1.11.13",
